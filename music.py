@@ -39,7 +39,7 @@ def get_track_name_from_video_url(url: str) -> str:
 class Music(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
-        self.queue = []
+        self.queue: list = []
 
     @commands.command()
     async def join(self, ctx):
@@ -128,6 +128,15 @@ class Music(commands.Cog):
         for i in range(len(self.queue)):
             result += f'{i+1}: {get_track_name_from_video_url(self.queue[i])}\n'
         await ctx.send(result)
+
+    @commands.command()
+    async def rm(self, ctx, index):
+        """Remove song with index from queue"""
+        try:
+            ind = int(index) + 1
+            self.queue.pop(ind)
+        except:
+            await ctx.send('Given index is not valid')
 
 
 def setup(client):
