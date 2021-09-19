@@ -37,16 +37,21 @@ class Music(commands.Cog):
     async def join(self, ctx):
         if ctx.author.voice is None:
             await ctx.send("Ge zit ni in een voice channel se wabbe")
-        voice_channel = ctx.author.voice.channel
-        if ctx.voice_client is None:
-            await voice_channel.connect()
         else:
-            await ctx.voice_client.move_to(voice_channel)
+            voice_channel = ctx.author.voice.channel
+            if ctx.voice_client is None:
+                await voice_channel.connect()
+            else:
+                await ctx.voice_client.move_to(voice_channel)
 
     @commands.command()
     async def disconnect(self, ctx):
         self.queue = []
         await ctx.voice_client.disconnect()
+
+    @commands.command()
+    async def stop(self, ctx):
+        await self.disconnect(ctx)
 
     async def play_song(self, ctx, url):
         FFMPEG_OPTIONS = {
@@ -72,7 +77,11 @@ class Music(commands.Cog):
 
     @commands.command()
     async def play(self, ctx, *input):
+        # If the bot is not yet connected to the voice channel, connect it
+        if not ctx.voice_client or not ctx.voice_client.is_connected():
+            await self.join(ctx)
 
+        # Process user input: can be URL or search query
         msg = ' '.join(input)
 
         if (not msg.startswith('http')):
@@ -82,8 +91,10 @@ class Music(commands.Cog):
         else:
             url = msg
 
+        # Add song to the queue
         self.queue.append(url)
 
+        # If no song is currently playing, call the play function
         if not ctx.voice_client.is_playing():
             threading.Thread(target=asyncio.run, args=(
                 self.play_next_song(ctx),)).start()
