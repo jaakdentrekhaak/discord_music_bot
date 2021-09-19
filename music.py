@@ -114,6 +114,7 @@ class Music(commands.Cog):
         else:
             # Add song to the queue
             self.queue.append(url)
+        await ctx.send('Added to queue: ' + url)
 
     @commands.command()
     async def pause(self, ctx):
