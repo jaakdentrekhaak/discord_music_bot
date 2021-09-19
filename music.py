@@ -6,6 +6,7 @@ import urllib.parse
 import requests
 import time
 import threading
+from bs4 import BeautifulSoup
 
 
 def get_video_id_from_track_name(track_name: str) -> str:
@@ -26,6 +27,13 @@ def get_video_id_from_track_name(track_name: str) -> str:
     video_id = cut.split('"')[0]
 
     return video_id
+
+
+def get_track_name_from_video_url(url: str) -> str:
+    response = requests.get(url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    result = soup.find('meta', {'name': 'title'})['content']
+    return result
 
 
 class Music(commands.Cog):
@@ -112,6 +120,14 @@ class Music(commands.Cog):
     async def skip(self, ctx):
         """Skips the current song"""
         ctx.voice_client.stop()
+
+    @commands.command()
+    async def queue(self, ctx):
+        """Shows the current queue"""
+        result = ''
+        for i in range(len(self.queue)):
+            result += f'{i+1}: {get_track_name_from_video_url(self.queue[i])}\n'
+        await ctx.send(result)
 
 
 def setup(client):
