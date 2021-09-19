@@ -44,6 +44,10 @@ class Music(commands.Cog):
             else:
                 await ctx.voice_client.move_to(voice_channel)
 
+            # Start thread for listening for song requests
+            threading.Thread(target=asyncio.run, args=(
+                self.listen_for_songs(ctx),)).start()
+
     @commands.command()
     async def disconnect(self, ctx):
         self.queue = []
@@ -67,9 +71,9 @@ class Music(commands.Cog):
             source = await discord.FFmpegOpusAudio.from_probe(url2, **FFMPEG_OPTIONS)
             ctx.voice_client.play(source)
 
-    async def play_next_song(self, ctx):
+    async def listen_for_songs(self, ctx):
         while ctx.voice_client and ctx.voice_client.is_connected():
-            if (not ctx.voice_client.is_playing() and len(self.queue) > 0):
+            if (not ctx.voice_client.is_playing() and not ctx.voice_client.is_paused() and len(self.queue) > 0):
                 url = self.queue.pop(0)
                 await self.play_song(ctx, url)
             else:
@@ -94,18 +98,20 @@ class Music(commands.Cog):
         # Add song to the queue
         self.queue.append(url)
 
-        # If no song is currently playing, call the play function
-        if not ctx.voice_client.is_playing():
-            threading.Thread(target=asyncio.run, args=(
-                self.play_next_song(ctx),)).start()
-
     @commands.command()
     async def pause(self, ctx):
-        await ctx.voice_client.pause()
+        """Pauses the current song"""
+        ctx.voice_client.pause()
 
     @commands.command()
     async def resume(self, ctx):
-        await ctx.voice_client.resume()
+        """Resumes the current song if paused"""
+        ctx.voice_client.resume()
+
+    @commands.command()
+    async def skip(self, ctx):
+        """Skips the current song"""
+        ctx.voice_client.stop()
 
 
 def setup(client):

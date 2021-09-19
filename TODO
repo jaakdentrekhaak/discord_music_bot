@@ -1,11 +1,11 @@
 () = DONE
 
-- stop
-- skip
+- ()stop
+- ()skip
 - queue:
     - ()add songs to queue
     - remove songs from queue
 - playlist
 - ()search songs with title
 - fast forward
-- automatically join when -play
+- ()automatically join when -play
