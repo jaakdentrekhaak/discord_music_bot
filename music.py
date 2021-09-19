@@ -137,13 +137,13 @@ class Music(commands.Cog):
         result = ''
         for i in range(len(self.queue)):
             result += f'{i+1}: {get_track_name_from_video_url(self.queue[i])}\n'
-        await ctx.send(result)
+        await ctx.send(result if len(result) > 0 else 'Nothing in the queue')
 
     @commands.command()
     async def rm(self, ctx, index):
         """Remove song with index from queue"""
         try:
-            ind = int(index) + 1
+            ind = int(index) - 1
             self.queue.pop(ind)
         except:
             await ctx.send('Given index is not valid')
