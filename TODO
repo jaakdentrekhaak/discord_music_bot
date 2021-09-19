@@ -6,7 +6,7 @@
     - ()add songs to queue
     - ()remove songs from queue
     - ()show queue
-- playlist
+- ()playlist
 - ()search songs with title
 - fast forward
 - ()automatically join when -play

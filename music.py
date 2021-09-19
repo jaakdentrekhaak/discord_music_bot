@@ -6,7 +6,6 @@ import urllib.parse
 import requests
 import time
 import threading
-from bs4 import BeautifulSoup
 
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
@@ -102,8 +101,19 @@ class Music(commands.Cog):
         else:
             url = msg
 
-        # Add song to the queue
-        self.queue.append(url)
+        # If playlist URL is given: add all songs from playlist to queue
+        if 'playlist' in url:
+            with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+                info = ydl.extract_info(url, download=False)
+                entries = info['entries']
+
+            for entry in entries:
+                video_id = entry['id']
+                self.queue.append(
+                    f'https://www.youtube.com/watch?v={video_id}')
+        else:
+            # Add song to the queue
+            self.queue.append(url)
 
     @commands.command()
     async def pause(self, ctx):
