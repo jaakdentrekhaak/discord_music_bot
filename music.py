@@ -43,6 +43,7 @@ class Music(commands.Cog):
 
     @commands.command()
     async def join(self, ctx):
+        """Let bot join the voice channel you're in"""
         if ctx.author.voice is None:
             await ctx.send("Ge zit ni in een voice channel se wabbe")
         else:
@@ -57,13 +58,10 @@ class Music(commands.Cog):
                 self.listen_for_songs(ctx),)).start()
 
     @commands.command()
-    async def disconnect(self, ctx):
+    async def stop(self, ctx):
+        """Disconnect bot from voice channel"""
         self.queue = []
         await ctx.voice_client.disconnect()
-
-    @commands.command()
-    async def stop(self, ctx):
-        await self.disconnect(ctx)
 
     async def play_song(self, ctx, url):
         FFMPEG_OPTIONS = {
@@ -89,6 +87,7 @@ class Music(commands.Cog):
 
     @commands.command()
     async def play(self, ctx, *input):
+        """Play song with the given title or url"""
         # If the bot is not yet connected to the voice channel, connect it
         if not ctx.voice_client or not ctx.voice_client.is_connected():
             await self.join(ctx)
@@ -137,22 +136,6 @@ class Music(commands.Cog):
             self.queue.pop(ind)
         except:
             await ctx.send('Given index is not valid')
-
-    @commands.command()
-    async def h(self, ctx):
-        """Provide all commands with information"""
-        result = """Command information:
-        -join: let bot join the voice channel you're in
-        -disconnect: disconnect bot from voice channel
-        -stop: disconnect bot from voice channel
-        -play {title/url}: play song with the given title or url
-        -pause: pause the current song
-        -resume: resume the current song when paused
-        -skip: skip the current song
-        -queue: show the queue
-        -rm {index}: remove a song from the queue with the given index
-        -h: provide help message"""
-        await ctx.send(result)
 
 
 def setup(client):
