@@ -2,10 +2,12 @@
 
 - ()stop
 - ()skip
-- queue:
+- ()queue:
     - ()add songs to queue
-    - remove songs from queue
+    - ()remove songs from queue
+    - ()show queue
 - playlist
 - ()search songs with title
 - fast forward
 - ()automatically join when -play
+- ()add help command

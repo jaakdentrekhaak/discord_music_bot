@@ -138,6 +138,22 @@ class Music(commands.Cog):
         except:
             await ctx.send('Given index is not valid')
 
+    @commands.command()
+    async def h(self, ctx):
+        """Provide all commands with information"""
+        result = """Command information:
+        -join: let bot join the voice channel you're in
+        -disconnect: disconnect bot from voice channel
+        -stop: disconnect bot from voice channel
+        -play {title/url}: play song with the given title or url
+        -pause: pause the current song
+        -resume: resume the current song when paused
+        -skip: skip the current song
+        -queue: show the queue
+        -rm {index}: remove a song from the queue with the given index
+        -h: provide help message"""
+        await ctx.send(result)
+
 
 def setup(client):
     client.add_cog(Music(client))
