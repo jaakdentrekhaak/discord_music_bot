@@ -8,6 +8,14 @@ import time
 import threading
 from bs4 import BeautifulSoup
 
+FFMPEG_OPTIONS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn'
+}
+YDL_OPTIONS = {
+    'format': 'bestaudio'
+}
+
 
 def get_video_id_from_track_name(track_name: str) -> str:
     """Retrieve the video id from the song for which the name is given in the input.
@@ -30,10 +38,9 @@ def get_video_id_from_track_name(track_name: str) -> str:
 
 
 def get_track_name_from_video_url(url: str) -> str:
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    result = soup.find('meta', {'name': 'title'})['content']
-    return result
+    with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+        info = ydl.extract_info(url, download=False)
+        return info['title']
 
 
 class Music(commands.Cog):
@@ -64,13 +71,6 @@ class Music(commands.Cog):
         await ctx.voice_client.disconnect()
 
     async def play_song(self, ctx, url):
-        FFMPEG_OPTIONS = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-            'options': '-vn'
-        }
-        YDL_OPTIONS = {
-            'format': 'bestaudio'
-        }
         with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
             info = ydl.extract_info(url, download=False)
             url2 = info['formats'][0]['url']
