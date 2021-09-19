@@ -1,8 +1,11 @@
+import asyncio
 import discord
 from discord.ext import commands
 import youtube_dl
 import urllib.parse
 import requests
+import time
+import threading
 
 
 def get_video_id_from_track_name(track_name: str) -> str:
@@ -28,6 +31,7 @@ def get_video_id_from_track_name(track_name: str) -> str:
 class Music(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
+        self.queue = []
 
     @commands.command()
     async def join(self, ctx):
@@ -41,11 +45,10 @@ class Music(commands.Cog):
 
     @commands.command()
     async def disconnect(self, ctx):
+        self.queue = []
         await ctx.voice_client.disconnect()
 
-    @commands.command()
-    async def play(self, ctx, *input):
-        ctx.voice_client.stop()
+    async def play_song(self, ctx, url):
         FFMPEG_OPTIONS = {
             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-vn'
@@ -53,7 +56,22 @@ class Music(commands.Cog):
         YDL_OPTIONS = {
             'format': 'bestaudio'
         }
-        vc = ctx.voice_client
+        with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
+            info = ydl.extract_info(url, download=False)
+            url2 = info['formats'][0]['url']
+            source = await discord.FFmpegOpusAudio.from_probe(url2, **FFMPEG_OPTIONS)
+            ctx.voice_client.play(source)
+
+    async def play_next_song(self, ctx):
+        while ctx.voice_client and ctx.voice_client.is_connected():
+            if (not ctx.voice_client.is_playing() and len(self.queue) > 0):
+                url = self.queue.pop(0)
+                await self.play_song(ctx, url)
+            else:
+                time.sleep(1)
+
+    @commands.command()
+    async def play(self, ctx, *input):
 
         msg = ' '.join(input)
 
@@ -64,11 +82,11 @@ class Music(commands.Cog):
         else:
             url = msg
 
-        with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
-            info = ydl.extract_info(url, download=False)
-            url2 = info['formats'][0]['url']
-            source = await discord.FFmpegOpusAudio.from_probe(url2, **FFMPEG_OPTIONS)
-            vc.play(source)
+        self.queue.append(url)
+
+        if not ctx.voice_client.is_playing():
+            threading.Thread(target=asyncio.run, args=(
+                self.play_next_song(ctx),)).start()
 
     @commands.command()
     async def pause(self, ctx):
