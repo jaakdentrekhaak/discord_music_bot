@@ -14,6 +14,7 @@ FFMPEG_OPTIONS = {
 YDL_OPTIONS = {
     'format': 'bestaudio'
 }
+MAX_TIMER = 15
 
 
 def get_video_id_from_track_name(track_name: str) -> str:
@@ -37,6 +38,14 @@ def get_video_id_from_track_name(track_name: str) -> str:
 
 
 def get_track_name_from_video_url(url: str) -> str:
+    """Retrieve the track name given the YouTube URL of a song
+
+    Args:
+        url (str): YouTube URL of song
+
+    Returns:
+        str: track name of song with given URL
+    """
     with youtube_dl.YoutubeDL(YDL_OPTIONS) as ydl:
         info = ydl.extract_info(url, download=False)
         return info['title']
@@ -46,12 +55,13 @@ class Music(commands.Cog):
     def __init__(self, client) -> None:
         self.client = client
         self.queue: list = []
+        self.timer: int = MAX_TIMER
 
     @commands.command()
     async def join(self, ctx):
         """Let bot join the voice channel you're in"""
         if ctx.author.voice is None:
-            await ctx.send("Ge zit ni in een voice channel se wabbe")
+            await ctx.send("You're not in a voice channel")
         else:
             voice_channel = ctx.author.voice.channel
             if ctx.voice_client is None:
@@ -82,7 +92,14 @@ class Music(commands.Cog):
                 url = self.queue.pop(0)
                 await self.play_song(ctx, url)
             else:
-                time.sleep(1)
+                # # If bot is not playing a song for a few minutes, leave channel
+                # if not ctx.voice_client.is_playing():
+                #     self.timer -= 3
+                #     if self.timer <= 0:
+                #         await ctx.voice_client.disconnect()
+                # else:
+                #     self.timer = MAX_TIMER
+                time.sleep(3)
 
     @commands.command()
     async def play(self, ctx, *input):
