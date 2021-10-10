@@ -116,7 +116,8 @@ class Music(commands.Cog):
             video_id = get_video_id_from_track_name(msg)
             url = f'https://www.youtube.com/watch?v={video_id}'
         else:
-            url = msg
+            # remove other possible parameters after ?v=...
+            url = msg.split('&')[0]
 
         # If playlist URL is given: add all songs from playlist to queue
         if 'playlist' in url:
