@@ -150,6 +150,11 @@ class Music(commands.Cog):
         ctx.voice_client.stop()
 
     @commands.command()
+    async def next(self, ctx):
+        """Skips the current song"""
+        ctx.voice_client.stop()
+
+    @commands.command()
     async def queue(self, ctx):
         """Shows the current queue"""
         result = ''
